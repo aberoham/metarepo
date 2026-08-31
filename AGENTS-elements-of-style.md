@@ -99,6 +99,10 @@ serial human time, and a big pile 'o changes takes a bigger while.
 Whitespace-only changes go in their own noop PR. Link the issue (`fixes
 #NNN`). Rebase and force-push freely; PRs are not immutable.
 
+Once review starts, keep the description as the original summary. Add later
+repairs and rerun results as short thread comments so the history stays
+chronological.
+
 ## never do these
 
 | anti-pattern | instead |
