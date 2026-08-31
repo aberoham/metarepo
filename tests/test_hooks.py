@@ -21,6 +21,12 @@ def diff(path: str, *added: str, start: int = 10) -> str:
             f"@@ -{start},0 +{start},{len(added)} @@\n{body}\n")
 
 
+def new_file_diff(path: str, *added: str) -> str:
+    body = "\n".join("+" + line for line in added)
+    return (f"diff --git a/{path} b/{path}\nnew file mode 100644\n"
+            f"--- /dev/null\n+++ b/{path}\n@@ -0,0 +1,{len(added)} @@\n{body}\n")
+
+
 class CommentLengthTests(unittest.TestCase):
     def test_three_line_comment_fails(self):
         problems = check.check_diff(diff("lib/x.pm", "# one", "# two", "# three", "my $x = 1;"))
@@ -95,6 +101,35 @@ class WordChoiceTests(unittest.TestCase):
         self.assertEqual(listed, set(check.BANNED))
 
 
+class LegacyFixtureTests(unittest.TestCase):
+    def test_existing_server_fixture_warns(self):
+        path = "server/t/fixtures/named.conf"
+        self.assertEqual(
+            check.legacy_fixture_notes(diff(path, "zone example.test")),
+            [f"{path}: existing legacy fixture changed. Add a new fixture and test unless the fixture itself is wrong"],
+        )
+
+    def test_new_server_fixture_passes(self):
+        path = "server/t/fixtures/import-extra.conf"
+        self.assertEqual(check.legacy_fixture_notes(new_file_diff(path, "zone example.test")), [])
+
+    def test_deleted_server_fixture_warns(self):
+        path = "server/t/fixtures/named.conf"
+        text = (f"diff --git a/{path} b/{path}\ndeleted file mode 100644\n"
+                f"--- a/{path}\n+++ /dev/null\n@@ -1 +0,0 @@\n-zone example.test\n")
+        self.assertEqual(len(check.legacy_fixture_notes(text)), 1)
+
+    def test_renamed_server_fixture_warns(self):
+        old = "server/t/fixtures/named.conf"
+        new = "server/t/fixtures/import.conf"
+        text = (f"diff --git a/{old} b/{new}\nsimilarity index 100%\n"
+                f"rename from {old}\nrename to {new}\n")
+        self.assertEqual(len(check.legacy_fixture_notes(text)), 1)
+
+    def test_other_fixtures_pass(self):
+        self.assertEqual(check.legacy_fixture_notes(diff("test/fixtures/api.json", "{}")), [])
+
+
 class SubjectTests(unittest.TestCase):
     def test_area_prefix_with_identifier_passes(self):
         self.assertEqual(check.check_message("Makefile.PL: say why DBD::mysql won't build here\n"), ([], []))
@@ -159,6 +194,17 @@ class HookEndToEndTests(unittest.TestCase):
         proc = self.commit("x.pm", "1;\n2;\n# a\n# b\n# c\n", "x: add a thing")
         self.assertNotEqual(proc.returncode, 0)
         self.assertIn("3-line comment", proc.stderr)
+
+    def test_pre_commit_warns_on_existing_legacy_fixture(self):
+        path = "server/t/fixtures/named.conf"
+        (self.repo / path).parent.mkdir(parents=True)
+        first = self.commit(path, "zone first.test\n", "test: add fixture")
+        self.assertEqual(first.returncode, 0, first.stderr)
+        self.assertNotIn("existing legacy fixture", first.stderr)
+
+        second = self.commit(path, "zone second.test\n", "test: change fixture")
+        self.assertEqual(second.returncode, 0, second.stderr)
+        self.assertIn("existing legacy fixture changed", second.stderr)
 
     def test_commit_msg_rejects_capitalised_subject(self):
         proc = self.commit("x.pm", "1;\n", "Add a thing")

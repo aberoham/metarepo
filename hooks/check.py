@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Mechanical checks from AGENTS-elements-of-style.md on a diff, a commit
 message, or a block of prose: comment length, a comment repeating nearby text,
-the AGENTS.md word list, commit subject shape, and the prose rules --prose
-applies to PR and issue bodies. Runs as the pre-commit and commit-msg hooks
-(./nt.py sync points core.hooksPath here) and under ./nt.py lint.
+the AGENTS.md word list, commit subject shape, shared legacy fixture changes,
+and the prose rules. --prose applies to PR and issue bodies. Runs as the
+pre-commit and commit-msg hooks (./nt.py sync points core.hooksPath here) and
+under ./nt.py lint.
 Standard library only, so it runs wherever git does.
 
 Confidence is content: hedges and modals (may, might, could, "my best guess")
@@ -110,6 +111,8 @@ INLINE_CODE_RE = re.compile(r"`[^`]*`")
 
 WORD_RE = re.compile(r"[a-z0-9]+")
 HUNK_RE = re.compile(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@")
+DIFF_HEADER_RE = re.compile(r"^a/(.+?) b/(.+)$")
+LEGACY_FIXTURE_PREFIX = "server/t/fixtures/"
 
 
 def comment_style(path: str) -> str | None:
@@ -240,6 +243,26 @@ def check_diff(diff: str) -> list[str]:
     return problems
 
 
+def legacy_fixture_notes(diff: str) -> list[str]:
+    """Warn when a change rewrites a shared NicTool v2 server fixture."""
+    notes = []
+    for section in diff.split("diff --git ")[1:]:
+        lines = section.splitlines()
+        match = DIFF_HEADER_RE.match(lines[0]) if lines else None
+        if not match or any(line.startswith("new file mode ") for line in lines):
+            continue
+        paths = [match.group(1), match.group(2)]
+        paths.extend(line.removeprefix("rename from ") for line in lines if line.startswith("rename from "))
+        paths.extend(line.removeprefix("rename to ") for line in lines if line.startswith("rename to "))
+        path = next((p for p in paths if p.startswith(LEGACY_FIXTURE_PREFIX)), None)
+        if path:
+            notes.append(
+                f"{path}: existing legacy fixture changed. Add a new fixture and test "
+                "unless the fixture itself is wrong"
+            )
+    return notes
+
+
 def check_message(message: str) -> tuple[list[str], list[str]]:
     """Return (problems, notes) for a commit message."""
     lines = [ln for ln in message.splitlines() if not ln.startswith("#")]
@@ -348,7 +371,8 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.staged:
-        return 0 if report(check_diff(git("diff", "--cached", "-U0", "--no-color")), [], "staged") else 1
+        diff = git("diff", "--cached", "-U0", "--no-color")
+        return 0 if report(check_diff(diff), legacy_fixture_notes(diff), "staged") else 1
     if args.prose:
         if args.prose == "-":
             problems, notes = check_prose(sys.stdin.read())
@@ -362,7 +386,8 @@ def main() -> int:
         return 0 if report(problems, notes, "commit message") else 1
 
     base, _, head = args.range.partition("..")
-    ok = report(check_diff(git("diff", "-U0", "--no-color", f"{base}...{head}")), [], f"{base}...{head}")
+    diff = git("diff", "-U0", "--no-color", f"{base}...{head}")
+    ok = report(check_diff(diff), legacy_fixture_notes(diff), f"{base}...{head}")
     for sha in git("rev-list", "--reverse", f"{base}..{head}").split():
         problems, notes = check_message(git("log", "-1", "--format=%B", sha))
         ok &= report(problems, notes, sha[:7])

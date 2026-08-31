@@ -226,6 +226,22 @@ Keep comments rare and high-signal.
 - Review every added comment before pushing; remove anything that does not
   protect understanding or correctness.
 
+## Legacy NicTool tests and fixtures
+
+Treat existing files under `NicTool/server/t/fixtures/` as shared contracts. A
+fixture changed for one test can change unrelated tests that consume it.
+
+- Add a new fixture and a focused test for new behavior. Add the fixture to
+  `NicTool/server/MANIFEST` when that manifest owns it.
+- Do not reshape an existing fixture to serve a new case. More fixtures and
+  more tests are almost always the right answer in the v2 codebase.
+- Change an existing fixture only when the fixture itself is wrong. Trace every
+  consumer, run the complete server suite, and explain the exception in the PR.
+
+The style hook warns when an existing `server/t/fixtures/` file is modified,
+deleted, or renamed. New fixture files do not trigger it. Treat the warning as
+a review stop, not as proof that the change is wrong.
+
 ## Data access goes through the store layer (hard rule)
 
 v3's data stores are pluggable by design: every entity reaches its backend
@@ -252,6 +268,7 @@ the api (`lib/store-access.test.js`) fails on any such import; keep it green.
 commit in every clone: comment runs over two lines, a comment repeating five
 words of nearby added text, the word list below, a copyright line in a file's
 first ten lines that doesn't name the current year, and commit subject shape.
+It also warns when a change touches an existing legacy server fixture.
 `./nt.py sync` points each clone's `core.hooksPath` at `hooks/`, so it runs
 whoever is committing. `./nt.py lint` runs the same checks over every claimed
 branch. `git commit --no-verify` is the deliberate exception and shows in
