@@ -1,0 +1,927 @@
+diff --git a/client/t/e2e/auth.spec.ts b/client/t/e2e/auth.spec.ts
+index bae37a5..7230fb1 100644
+--- a/client/t/e2e/auth.spec.ts
++++ b/client/t/e2e/auth.spec.ts
+@@ -1,10 +1,6 @@
+ import { test, expect } from '@playwright/test';
+ import {
+-<<<<<<< HEAD
+-  BASE, USERNAME,
+-=======
+   BASE, USERNAME, PASSWORD, TEST_GID,
+->>>>>>> refs/nt/pr/365
+   freshCtx, getLoginCsrf, apiLogin, authGet, cookieString,
+   apiCookies, extractCsrf, postLogin,
+ } from './helpers';
+diff --git a/client/t/e2e/csrf-enforcement.spec.ts b/client/t/e2e/csrf-enforcement.spec.ts
+index 80ab58e..6c86d39 100644
+--- a/client/t/e2e/csrf-enforcement.spec.ts
++++ b/client/t/e2e/csrf-enforcement.spec.ts
+@@ -3,12 +3,8 @@ import {
+   authGet, authPost,
+   createGroup, createZone, createRecord, createUser, createNameserver,
+   deleteGroup, deleteZone, deleteRecord, deleteUser, deleteNameserver,
+-<<<<<<< HEAD
+-  findInListing, uniqueName, uniqueNsName, extractCsrf, BASE, GROUP_DEFAULTS,
+-  apiCookies,
+-=======
+   findInListing, uniqueName, uniqueNsName, uniqueZoneName, extractCsrf, BASE, GROUP_DEFAULTS, TEST_GID,
+->>>>>>> refs/nt/pr/365
++  apiCookies,
+ } from './helpers';
+ 
+ // ---------------------------------------------------------------------------
+diff --git a/client/t/e2e/csrf-links.spec.ts b/client/t/e2e/csrf-links.spec.ts
+index 6cdaba9..529e783 100644
+--- a/client/t/e2e/csrf-links.spec.ts
++++ b/client/t/e2e/csrf-links.spec.ts
+@@ -3,12 +3,8 @@ import {
+   authGet, authPost,
+   createGroup, createZone, createRecord, createUser,
+   deleteGroup, deleteZone, deleteUser,
+-<<<<<<< HEAD
+-  findInListing, uniqueName, extractCsrf, BASE,
+-  apiCookies, zonePage,
+-=======
+   findInListing, uniqueName, extractCsrf, BASE, TEST_GID,
+->>>>>>> refs/nt/pr/365
++  apiCookies, zonePage,
+ } from './helpers';
+ 
+ // ---------------------------------------------------------------------------
+diff --git a/client/t/e2e/csrf-race.spec.ts b/client/t/e2e/csrf-race.spec.ts
+index a8c1edd..903711a 100644
+--- a/client/t/e2e/csrf-race.spec.ts
++++ b/client/t/e2e/csrf-race.spec.ts
+@@ -1,18 +1,10 @@
+ import { test, expect } from '@playwright/test';
+ import {
+-<<<<<<< HEAD
+-  BASE, GROUP_DEFAULTS, ROOT_GROUPS,
++  BASE, GROUP_DEFAULTS, ROOT_GROUPS, TEST_GID,
+   apiLogin, authGet, authPost, deleteGroup, findInListing, formCsrfToken, setCookieValue, uniqueName,
+ } from './helpers';
+ 
+-=======
+-  BASE, GROUP_DEFAULTS, TEST_GID,
+-  apiLogin, authGet, authPost, deleteGroup, findInListing, uniqueName,
+-} from './helpers';
+-
+-const ROOT_GROUPS = { cgi: 'group.cgi', gid: TEST_GID, idParam: 'nt_group_id' };
+ 
+->>>>>>> refs/nt/pr/365
+ // Regression tests for the cross-process CSRF token race (#335, fixed in #353).
+ //
+ // The failing state is what a browser restart produces: the NicTool session
+@@ -71,14 +63,8 @@ test.describe('CSRF token agreement across CGI processes', () => {
+     // A rendered form whose csrf cookie has since vanished (cleared by the
+     // browser, eaten by an extension, or simply never re-sent). The form
+     // token is derived from the session, so the POST must stand on its own.
+-<<<<<<< HEAD
+-    const { body: page } = await authGet(playwright, `${BASE}/group.cgi?nt_group_id=1`, sessionOnly);
++    const { body: page } = await authGet(playwright, `${BASE}/group.cgi?nt_group_id=${TEST_GID}`, sessionOnly);
+     const token = formCsrfToken(page);
+-=======
+-    const { body: page } = await authGet(playwright,
+-      `${BASE}/group.cgi?nt_group_id=${TEST_GID}&parent_group_id=${TEST_GID}&new=1`, sessionOnly);
+-    const token = formToken(page);
+->>>>>>> refs/nt/pr/365
+     expect(token, 'group.cgi renders a csrf token').toMatch(/^[0-9a-f]{40}$/);
+ 
+     const name = uniqueName('e2e_csrf_nocookie');
+diff --git a/client/t/e2e/delegation.spec.ts b/client/t/e2e/delegation.spec.ts
+index 7f7c4df..4720bfb 100644
+--- a/client/t/e2e/delegation.spec.ts
++++ b/client/t/e2e/delegation.spec.ts
+@@ -1,19 +1,11 @@
+ import { test, expect } from '@playwright/test';
+ import {
+-<<<<<<< HEAD
+-  BASE,
+-  authGet, authPost,
+-  createGroup, deleteGroup, createZone, deleteZone,
+-  createRecord, deleteRecord, createUser, deleteUser,
+-  uniqueName, extractCsrf,
+-  apiCookies,
+-=======
+   BASE, GROUP_DEFAULTS, TEST_GID,
+   apiLogin, authGet, authPost, cookieString,
+   createGroup, deleteGroup, createZone, deleteZone,
+   createRecord, deleteRecord, createUser, deleteUser,
+   uniqueName, uniqueZoneName, extractCsrf,
+->>>>>>> refs/nt/pr/365
++  apiCookies,
+ } from './helpers';
+ 
+ test.describe('Delegation', () => {
+@@ -112,12 +104,7 @@ test.describe('Delegation', () => {
+       await delegateZone(playwright, 'Save', WRITE_PERMS);
+ 
+       // Login as child user
+-<<<<<<< HEAD
+-      const childCookies = await apiCookies(playwright, `${username}@${childGroupName}`, 'delegtest123!');
+-=======
+-      const childLogin = await apiLogin(playwright, `${username}@${childGroupName}`, 'Deleg#Test#E2E46');
+-      const childCookies = cookieString(childLogin.sessionCookie, childLogin.csrfCookie);
+->>>>>>> refs/nt/pr/365
++      const childCookies = await apiCookies(playwright, `${username}@${childGroupName}`, 'Deleg#Test#E2E46');
+ 
+       // Should be able to create a record in the delegated zone
+       const rrid = await createRecord(playwright, childCookies, childGid, zid,
+@@ -138,12 +125,7 @@ test.describe('Delegation', () => {
+       await delegateZone(playwright, 'Modify', NO_PERMS);
+ 
+       // Login as child user
+-<<<<<<< HEAD
+-      const childCookies = await apiCookies(playwright, `${username}@${childGroupName}`, 'delegtest123!');
+-=======
+-      const childLogin = await apiLogin(playwright, `${username}@${childGroupName}`, 'Deleg#Test#E2E46');
+-      const childCookies = cookieString(childLogin.sessionCookie, childLogin.csrfCookie);
+->>>>>>> refs/nt/pr/365
++      const childCookies = await apiCookies(playwright, `${username}@${childGroupName}`, 'Deleg#Test#E2E46');
+ 
+       // Trying to add a record should fail
+       const { body } = await authPost(playwright, `${BASE}/zone.cgi`, childCookies,
+diff --git a/client/t/e2e/delete-ui.spec.ts b/client/t/e2e/delete-ui.spec.ts
+index 890adde..3ddaaf7 100644
+--- a/client/t/e2e/delete-ui.spec.ts
++++ b/client/t/e2e/delete-ui.spec.ts
+@@ -4,12 +4,8 @@ import {
+   createGroup, createZone, createRecord, createUser, createNameserver,
+   deleteGroup, deleteZone,
+   exactListing, findInListing,
+-<<<<<<< HEAD
+-  uniqueName, uniqueNsName, BASE,
+-  apiCookies, zonePage,
+-=======
+   uniqueName, uniqueNsName, uniqueZoneName, extractCsrf, BASE, TEST_GID,
+->>>>>>> refs/nt/pr/365
++  apiCookies, zonePage,
+ } from './helpers';
+ 
+ // ---------------------------------------------------------------------------
+diff --git a/client/t/e2e/global-teardown.ts b/client/t/e2e/global-teardown.ts
+index c129dd4..6e6cf6d 100644
+--- a/client/t/e2e/global-teardown.ts
++++ b/client/t/e2e/global-teardown.ts
+@@ -2,11 +2,7 @@ import { request } from '@playwright/test';
+ import { readdirSync, readFileSync, unlinkSync } from 'node:fs';
+ import path from 'node:path';
+ import {
+-<<<<<<< HEAD
+-  BASE, RUN_DIR, RUN_ID_PATTERN, apiLogin, cookieString, authGet, processIsAlive,
+-=======
+-  BASE, TEST_GID, apiLogin, cookieString, authGet,
+->>>>>>> refs/nt/pr/365
++  BASE, TEST_GID, RUN_DIR, RUN_ID_PATTERN, apiLogin, cookieString, authGet, processIsAlive,
+   deleteGroup, deleteZone, deleteUser, deleteNameserver,
+ } from './helpers';
+ 
+diff --git a/client/t/e2e/groups.spec.ts b/client/t/e2e/groups.spec.ts
+index b4fb208..b591596 100644
+--- a/client/t/e2e/groups.spec.ts
++++ b/client/t/e2e/groups.spec.ts
+@@ -1,21 +1,11 @@
+ import { test, expect } from '@playwright/test';
+ import {
+-<<<<<<< HEAD
+-  BASE, GROUP_DEFAULTS, ROOT_GROUPS,
++  BASE, GROUP_DEFAULTS, ROOT_GROUPS, TEST_GID,
+   authGet, authPost,
+-=======
+-  BASE, GROUP_DEFAULTS, TEST_GID,
+-  apiLogin, authGet, authPost, cookieString,
+->>>>>>> refs/nt/pr/365
+   createGroup, deleteGroup, findInListing, uniqueName, extractCsrf,
+   apiCookies,
+ } from './helpers';
+ 
+-<<<<<<< HEAD
+-=======
+-const ROOT_GROUPS = { cgi: 'group.cgi', gid: TEST_GID, idParam: 'nt_group_id' };
+-
+->>>>>>> refs/nt/pr/365
+ test.describe('Groups', () => {
+   let cookies: string;
+   let csrfToken: string;
+diff --git a/client/t/e2e/helpers.ts b/client/t/e2e/helpers.ts
+index 56d50d9..7ec42b0 100644
+--- a/client/t/e2e/helpers.ts
++++ b/client/t/e2e/helpers.ts
+@@ -11,7 +11,7 @@ export const PASSWORD = process.env.NICTOOL_TEST_PASSWORD || 'nictool';
+ export const TEST_GID = Number(process.env.NICTOOL_TEST_GID || '1');
+ export const TEST_USER_PASSWORD = 'Valid#E2e#Pass44';
+ 
+-export const ROOT_GROUPS = { cgi: 'group.cgi', gid: 1, idParam: 'nt_group_id' };
++export const ROOT_GROUPS = { cgi: 'group.cgi', gid: TEST_GID, idParam: 'nt_group_id' };
+ 
+ // run manifests written by global-setup, read by global-teardown
+ export const RUN_DIR = path.join(__dirname, '.e2e-runs');
+diff --git a/client/t/e2e/logs.spec.ts b/client/t/e2e/logs.spec.ts
+index b903d7a..4b9a91d 100644
+--- a/client/t/e2e/logs.spec.ts
++++ b/client/t/e2e/logs.spec.ts
+@@ -1,17 +1,10 @@
+ import { test, expect } from '@playwright/test';
+ import {
+-<<<<<<< HEAD
+-  BASE,
+-  authGet,
+-  createGroup, deleteGroup, createZone, deleteZone,
+-  createRecord, deleteRecord, uniqueName, extractCsrf,
+-  apiCookies,
+-=======
+   BASE, TEST_GID,
+   apiLogin, authGet, authPost, cookieString,
+   createGroup, deleteGroup, createZone, deleteZone,
+   createRecord, deleteRecord, uniqueName, uniqueZoneName, extractCsrf,
+->>>>>>> refs/nt/pr/365
++  apiCookies,
+ } from './helpers';
+ 
+ test.describe('Logs', () => {
+@@ -20,16 +13,9 @@ test.describe('Logs', () => {
+   let gid: string;
+ 
+   test.beforeAll(async ({ playwright }) => {
+-<<<<<<< HEAD
+     cookies = await apiCookies(playwright);
+     csrfToken = extractCsrf(cookies);
+-    gid = await createGroup(playwright, cookies, 1, uniqueName('e2e_logs'));
+-=======
+-    const { sessionCookie, csrfCookie } = await apiLogin(playwright);
+-    cookies = cookieString(sessionCookie, csrfCookie);
+-    csrfToken = csrfCookie;
+     gid = await createGroup(playwright, cookies, TEST_GID, uniqueName('e2e_logs'));
+->>>>>>> refs/nt/pr/365
+   });
+ 
+   test.afterAll(async ({ playwright }) => {
+diff --git a/client/t/e2e/move.spec.ts b/client/t/e2e/move.spec.ts
+index eef8852..d05e117 100644
+--- a/client/t/e2e/move.spec.ts
++++ b/client/t/e2e/move.spec.ts
+@@ -1,19 +1,11 @@
+ import { test, expect } from '@playwright/test';
+ import {
+-<<<<<<< HEAD
+-  BASE,
+-  authGet, authPost,
+-  createGroup, deleteGroup, createZone, deleteZone,
+-  createUser, deleteUser, createNameserver, deleteNameserver,
+-  uniqueName, uniqueNsName, extractCsrf,
+-  apiCookies,
+-=======
+   BASE, TEST_GID,
+   apiLogin, authGet, authPost, cookieString,
+   createGroup, deleteGroup, createZone, deleteZone,
+   createUser, deleteUser, createNameserver, deleteNameserver,
+   uniqueName, uniqueNsName, uniqueZoneName, extractCsrf,
+->>>>>>> refs/nt/pr/365
++  apiCookies,
+ } from './helpers';
+ 
+ test.describe('Move Operations', () => {
+diff --git a/client/t/e2e/nameservers.spec.ts b/client/t/e2e/nameservers.spec.ts
+index 1123e99..bf33fc9 100644
+--- a/client/t/e2e/nameservers.spec.ts
++++ b/client/t/e2e/nameservers.spec.ts
+@@ -1,12 +1,7 @@
+ import { test, expect } from '@playwright/test';
+ import {
+-<<<<<<< HEAD
+-  BASE,
+-  authGet, authPost,
+-=======
+   BASE, TEST_GID,
+   apiLogin, authGet, authPost, cookieString,
+->>>>>>> refs/nt/pr/365
+   createGroup, deleteGroup, createNameserver, deleteNameserver,
+   uniqueName, uniqueNsName, extractCsrf,
+   apiCookies, clickIfPresent, frameFor, loginBodyFrame,
+@@ -18,16 +13,9 @@ test.describe('Nameservers', () => {
+   let gid: string;
+ 
+   test.beforeAll(async ({ playwright }) => {
+-<<<<<<< HEAD
+     cookies = await apiCookies(playwright);
+     csrfToken = extractCsrf(cookies);
+-    gid = await createGroup(playwright, cookies, 1, uniqueName('e2e_ns'));
+-=======
+-    const { sessionCookie, csrfCookie } = await apiLogin(playwright);
+-    cookies = cookieString(sessionCookie, csrfCookie);
+-    csrfToken = csrfCookie;
+     gid = await createGroup(playwright, cookies, TEST_GID, uniqueName('e2e_ns'));
+->>>>>>> refs/nt/pr/365
+   });
+ 
+   test.afterAll(async ({ playwright }) => {
+diff --git a/client/t/e2e/permissions.spec.ts b/client/t/e2e/permissions.spec.ts
+index 706a0db..43e3d36 100644
+--- a/client/t/e2e/permissions.spec.ts
++++ b/client/t/e2e/permissions.spec.ts
+@@ -1,19 +1,11 @@
+ import { test, expect } from '@playwright/test';
+ import {
+-<<<<<<< HEAD
+-  BASE, GROUP_DEFAULTS,
+-  authGet, authPost,
+-  createGroup, deleteGroup, createZone, deleteZone,
+-  createRecord, deleteRecord, createUser, deleteUser,
+-  uniqueName, extractCsrf,
+-  apiCookies,
+-=======
+   BASE, GROUP_DEFAULTS, TEST_GID,
+   apiLogin, authGet, authPost, cookieString,
+   createGroup, deleteGroup, createZone, deleteZone,
+   createRecord, deleteRecord, createUser, deleteUser,
+   uniqueName, uniqueZoneName, extractCsrf,
+->>>>>>> refs/nt/pr/365
++  apiCookies,
+ } from './helpers';
+ 
+ test.describe('Permissions', () => {
+@@ -132,9 +124,8 @@ test.describe('Permissions', () => {
+   });
+ 
+   test('user without user_create cannot create user', async ({ playwright }) => {
+-<<<<<<< HEAD
+     const body = await restrictedPost(playwright, { user_create: '0' }, 'group_users.cgi',
+-      u => `nt_group_id=${u.restrictedGid}&new=1&Create=Create&username=noperm_user&password=test123!&password2=test123!&email=no@test.example&first_name=No&last_name=Perm&csrf_token=${u.userCsrf}`);
++      u => `nt_group_id=${u.restrictedGid}&new=1&Create=Create&username=noperm_user&password=NoPerm%23E2E%2146&password2=NoPerm%23E2E%2146&email=no@test.example&first_name=No&last_name=Perm&csrf_token=${u.userCsrf}`);
+     expect(body.toLowerCase()).toMatch(/error|permission|denied|not allowed|access/i);
+   });
+ 
+@@ -143,30 +134,5 @@ test.describe('Permissions', () => {
+       u => `nt_group_id=${u.restrictedGid}&nt_user_id=${u.uid}&edit=1&Save=Save&username=${u.username}&first_name=SelfEdited&last_name=User&email=selfed@test.example&csrf_token=${u.userCsrf}`);
+     // Should not show permission error
+     expect(body.toLowerCase()).not.toMatch(/permission denied|not allowed/i);
+-=======
+-    const { userCookies, userCsrf, restrictedGid, uid } = await createRestrictedUser(playwright, { user_create: '0' });
+-
+-    try {
+-      const { body } = await authPost(playwright, `${BASE}/group_users.cgi`, userCookies,
+-        `nt_group_id=${restrictedGid}&new=1&Create=Create&username=noperm_user&password=NoPerm%23E2E%2146&password2=NoPerm%23E2E%2146&email=no@example.com&first_name=No&last_name=Perm&csrf_token=${userCsrf}`);
+-      expect(body.toLowerCase()).toMatch(/error|permission|denied|not allowed|access/i);
+-    } finally {
+-      await cleanupRestrictedUser(playwright, restrictedGid, uid);
+-    }
+-  });
+-
+-  test('user with self_write can edit own profile', async ({ playwright }) => {
+-    const { userCookies, userCsrf, restrictedGid, uid, username } = await createRestrictedUser(playwright, { self_write: '1' });
+-
+-    try {
+-      // User should be able to edit their own profile
+-      const { body } = await authPost(playwright, `${BASE}/group_users.cgi`, userCookies,
+-        `nt_group_id=${restrictedGid}&nt_user_id=${uid}&edit=1&Save=Save&username=${username}&first_name=SelfEdited&last_name=User&email=selfed@example.com&csrf_token=${userCsrf}`);
+-      // Should not show permission error
+-      expect(body.toLowerCase()).not.toMatch(/permission denied|not allowed/i);
+-    } finally {
+-      await cleanupRestrictedUser(playwright, restrictedGid, uid);
+-    }
+->>>>>>> refs/nt/pr/365
+   });
+ });
+diff --git a/client/t/e2e/records.spec.ts b/client/t/e2e/records.spec.ts
+index 7854ec1..96e9a82 100644
+--- a/client/t/e2e/records.spec.ts
++++ b/client/t/e2e/records.spec.ts
+@@ -1,18 +1,10 @@
+ import { test, expect } from '@playwright/test';
+ import {
+-<<<<<<< HEAD
+-  BASE,
+-  authGet, authPost,
+-  createGroup, deleteGroup, createZone, deleteZone,
+-  createRecord, deleteRecord, uniqueName, extractCsrf,
+-  apiCookies, clickIfPresent, frameFor, loginBodyFrame, zonePage,
+-=======
+   BASE, TEST_GID,
+   apiLogin, authGet, authPost, cookieString,
+   createGroup, deleteGroup, createZone, deleteZone,
+   createRecord, deleteRecord, uniqueName, uniqueZoneName, extractCsrf,
+-  browserLogin,
+->>>>>>> refs/nt/pr/365
++  browserLogin, apiCookies, clickIfPresent, frameFor, loginBodyFrame, zonePage,
+ } from './helpers';
+ 
+ test.describe('Records', () => {
+@@ -22,18 +14,10 @@ test.describe('Records', () => {
+   let zid: string;
+ 
+   test.beforeAll(async ({ playwright }) => {
+-<<<<<<< HEAD
+     cookies = await apiCookies(playwright);
+     csrfToken = extractCsrf(cookies);
+-    gid = await createGroup(playwright, cookies, 1, uniqueName('e2e_recs'));
+-    zid = await createZone(playwright, cookies, gid, `${uniqueName('e2e')}.test`);
+-=======
+-    const { sessionCookie, csrfCookie } = await apiLogin(playwright);
+-    cookies = cookieString(sessionCookie, csrfCookie);
+-    csrfToken = csrfCookie;
+     gid = await createGroup(playwright, cookies, TEST_GID, uniqueName('e2e_recs'));
+     zid = await createZone(playwright, cookies, gid, uniqueZoneName('e2e'));
+->>>>>>> refs/nt/pr/365
+   });
+ 
+   test.afterAll(async ({ playwright }) => {
+diff --git a/client/t/e2e/search-sort.spec.ts b/client/t/e2e/search-sort.spec.ts
+index 062ef50..57e29b8 100644
+--- a/client/t/e2e/search-sort.spec.ts
++++ b/client/t/e2e/search-sort.spec.ts
+@@ -1,12 +1,7 @@
+ import { test, expect } from '@playwright/test';
+ import {
+-<<<<<<< HEAD
+-  BASE,
+-  authGet,
+-=======
+   BASE, TEST_GID,
+   apiLogin, authGet, cookieString,
+->>>>>>> refs/nt/pr/365
+   createGroup, deleteGroup, createZone, deleteZone,
+   createRecord, deleteRecord, uniqueName,
+   apiCookies,
+diff --git a/client/t/e2e/security.spec.ts b/client/t/e2e/security.spec.ts
+index ef1a61e..b7d0c8f 100644
+--- a/client/t/e2e/security.spec.ts
++++ b/client/t/e2e/security.spec.ts
+@@ -20,14 +20,8 @@ test.describe('T1: Security Headers', () => {
+   });
+ 
+   test('authenticated page has all security headers', async ({ playwright }) => {
+-<<<<<<< HEAD
+     const cookies = await apiCookies(playwright);
+-    const { res } = await authGet(playwright, `${BASE}/group.cgi?nt_group_id=1`, cookies);
+-=======
+-    const { sessionCookie, csrfCookie } = await apiLogin(playwright);
+-    const cookies = `NicTool=${sessionCookie}; NicTool_csrf=${csrfCookie}`;
+     const { res } = await authGet(playwright, `${BASE}/group.cgi?nt_group_id=${TEST_GID}`, cookies);
+->>>>>>> refs/nt/pr/365
+     expect(res.status()).toBe(200);
+     expectSecurityHeaders(res.headers());
+   });
+diff --git a/client/t/e2e/users.spec.ts b/client/t/e2e/users.spec.ts
+index 39a6ac4..e64bee7 100644
+--- a/client/t/e2e/users.spec.ts
++++ b/client/t/e2e/users.spec.ts
+@@ -1,12 +1,7 @@
+ import { test, expect } from '@playwright/test';
+ import {
+-<<<<<<< HEAD
+-  BASE,
+-  apiLogin, authGet, authPost,
+-=======
+   BASE, TEST_GID,
+   apiLogin, authGet, authPost, cookieString,
+->>>>>>> refs/nt/pr/365
+   createGroup, deleteGroup, createUser, deleteUser,
+   uniqueName, extractCsrf,
+   apiCookies,
+@@ -65,24 +60,16 @@ test.describe('Users', () => {
+     const username = uniqueName('e2euser');
+     const uid = await createUser(playwright, cookies, gid, { username, password: 'Old#Pass#E2E44' });
+ 
+-<<<<<<< HEAD
+     // an admin may set any password, so the user changes their own
+-    const userCookies = await apiCookies(playwright, `${username}@${groupName}`, 'oldpass123!');
++    const userCookies = await apiCookies(playwright, `${username}@${groupName}`, 'Old#Pass#E2E44');
+     const changePassword = async (current: string) => (await authPost(playwright, `${BASE}/user.cgi`, userCookies,
+-      `nt_group_id=${gid}&nt_user_id=${uid}&edit=1&Save=Save&username=${username}&first_name=Test&last_name=User&email=${username}@test.example&password=newpass456!&password2=newpass456!${current}&csrf_token=${extractCsrf(userCookies)}`)).body;
+-=======
+-    // The CGI doesn't forward current_password to the server API,
+-    // so password changes via the web UI require the server's sanity check.
+-    // Verify the server enforces the current_password requirement.
+-    const { body: editBody } = await authPost(playwright, `${BASE}/group_users.cgi`, cookies,
+-      `nt_group_id=${gid}&nt_user_id=${uid}&edit=1&Save=Save&username=${username}&password=New%23Pass%23E2E46&password2=New%23Pass%23E2E46&email=${username}@example.com&first_name=Test&last_name=User&csrf_token=${csrfToken}`);
+->>>>>>> refs/nt/pr/365
++      `nt_group_id=${gid}&nt_user_id=${uid}&edit=1&Save=Save&username=${username}&first_name=Test&last_name=User&email=${username}@test.example&password=New%23Pass%23E2E46&password2=New%23Pass%23E2E46${current}&csrf_token=${extractCsrf(userCookies)}`)).body;
+ 
+     expect(await changePassword('')).toContain('Current password is required.');
+     expect(await changePassword('&current_password=wrongpass1!')).toContain('Current password is incorrect.');
+-    expect(await changePassword('&current_password=oldpass123!')).not.toContain('Sanity Error');
++    expect(await changePassword('&current_password=Old%23Pass%23E2E44')).not.toContain('Sanity Error');
+ 
+-    const login = await apiLogin(playwright, `${username}@${groupName}`, 'newpass456!');
++    const login = await apiLogin(playwright, `${username}@${groupName}`, 'New#Pass#E2E46');
+     expect(login.sessionCookie, 'the new password logs in').toBeTruthy();
+ 
+     await deleteUser(playwright, cookies, gid, uid);
+diff --git a/client/t/e2e/zones.spec.ts b/client/t/e2e/zones.spec.ts
+index 5f0d08f..fd3f491 100644
+--- a/client/t/e2e/zones.spec.ts
++++ b/client/t/e2e/zones.spec.ts
+@@ -1,17 +1,10 @@
+ import { test, expect } from '@playwright/test';
+ import {
+-<<<<<<< HEAD
+-  BASE,
+-  authGet, authPost,
+-  createGroup, deleteGroup, createZone, deleteZone,
+-  uniqueName, extractCsrf,
+-  apiCookies, clickIfPresent, frameFor, loginBodyFrame, zonePage,
+-=======
+   BASE, TEST_GID,
+   apiLogin, authGet, authPost, cookieString,
+   createGroup, deleteGroup, createZone, deleteZone,
+   uniqueName, uniqueZoneName, extractCsrf, browserLogin,
+->>>>>>> refs/nt/pr/365
++  apiCookies, clickIfPresent, frameFor, loginBodyFrame, zonePage,
+ } from './helpers';
+ 
+ test.describe('Zones', () => {
+@@ -20,16 +13,9 @@ test.describe('Zones', () => {
+   let gid: string;
+ 
+   test.beforeAll(async ({ playwright }) => {
+-<<<<<<< HEAD
+     cookies = await apiCookies(playwright);
+     csrfToken = extractCsrf(cookies);
+-    gid = await createGroup(playwright, cookies, 1, uniqueName('e2e_zones'));
+-=======
+-    const { sessionCookie, csrfCookie } = await apiLogin(playwright);
+-    cookies = cookieString(sessionCookie, csrfCookie);
+-    csrfToken = csrfCookie;
+     gid = await createGroup(playwright, cookies, TEST_GID, uniqueName('e2e_zones'));
+->>>>>>> refs/nt/pr/365
+   });
+ 
+   test.afterAll(async ({ playwright }) => {
+diff --git a/server/api/MANIFEST b/server/api/MANIFEST
+index d4816d8..a594903 100644
+--- a/server/api/MANIFEST
++++ b/server/api/MANIFEST
+@@ -29,18 +29,12 @@ t/TestConfig.pm
+ t/api.t
+ t/cache.t
+ t/list.t
+-<<<<<<< HEAD
+ t/log.t
+-=======
+ t/manifest.t
+->>>>>>> refs/nt/pr/365
+ t/nictool.t
+ t/object.t
+ t/protocol.t
+ t/result.t
+-<<<<<<< HEAD
+ t/transport.t
+ t/zone_api.t
+-=======
+->>>>>>> refs/nt/pr/365
+ t/cleanup.pl
+diff --git a/server/t/NicToolTest.pm b/server/t/NicToolTest.pm
+index 7bbda4e..62a4438 100644
+--- a/server/t/NicToolTest.pm
++++ b/server/t/NicToolTest.pm
+@@ -156,28 +156,19 @@ Please install the NicTool api library or edit 'test.cfg' to specify its locatio
+ 
+ sub nt_client {
+     return NicTool->new(
+-        cache_users  => 0,
+-        cache_groups => 0,
+-        server_host  => main::Config('server_host'),
+-        server_port  => main::Config('server_port'),
+-        @_
+-    );
+-}
+-
+-sub nt_api_connect () {
+-
+-<<<<<<< HEAD
+-    my $user = nt_client();
+-=======
+-    my $user = new NicTool(
+         cache_users       => 0,
+         cache_groups      => 0,
+         server_host       => main::Config('server_host'),
+         server_port       => main::Config('server_port'),
+         data_protocol     => main::Config('data_protocol'),
+         transfer_protocol => (main::Config('transfer_protocol') || 'http'),
++        @_
+     );
+->>>>>>> refs/nt/pr/365
++}
++
++sub nt_api_connect () {
++
++    my $user = nt_client();
+ 
+     ok( ref $user, 'NicTool API client' )
+         or die "Couldn't create NicTool Object";
+diff --git a/server/xt/14_permissions.t b/server/xt/14_permissions.t
+index 578bdc3..16ffe25 100644
+--- a/server/xt/14_permissions.t
++++ b/server/xt/14_permissions.t
+@@ -82,18 +82,7 @@ sub test_new_user {
+     noerrok($res) or die "Couldn't create test user";
+ 
+     #login as test user
+-<<<<<<< HEAD
+     my $tuser = nt_client();
+-=======
+-    my $tuser = new NicTool(
+-        cache_users       => 0,
+-        cache_groups      => 0,
+-        server_host       => Config('server_host'),
+-        server_port       => Config('server_port'),
+-        data_protocol     => Config('data_protocol'),
+-        transfer_protocol => (Config('transfer_protocol') || 'http'),
+-    );
+->>>>>>> refs/nt/pr/365
+     isa_ok( $tuser, 'NicTool' );
+ 
+     $tuser->login(
+diff --git a/server/xt/16_delegation.t b/server/xt/16_delegation.t
+index adf3aad..984e681 100644
+--- a/server/xt/16_delegation.t
++++ b/server/xt/16_delegation.t
+@@ -253,20 +253,16 @@ sub start {
+     $uid2 = $res->get('nt_user_id');
+ 
+     #login as test user
+-<<<<<<< HEAD
+-    $tuser = nt_client( cache_zone => 0, cache_records => 0 );
+-=======
+     $tuser = new NicTool(
+-        cache_users   => 0,
+-        cache_groups  => 0,
+-        cache_zone    => 0,
+-        cache_records => 0,
+-        server_host   => Config('server_host'),
+-        server_port   => Config('server_port'),
++        cache_users       => 0,
++        cache_groups      => 0,
++        cache_zone        => 0,
++        cache_records     => 0,
++        server_host       => Config('server_host'),
++        server_port       => Config('server_port'),
+         data_protocol     => Config('data_protocol'),
+-        transfer_protocol => ( Config('transfer_protocol') || 'http' )
++        transfer_protocol => (Config('transfer_protocol') || 'http'),
+     );
+->>>>>>> refs/nt/pr/365
+     isa_ok( $tuser, 'NicTool' );
+ 
+     $tuser->login(
+@@ -940,7 +936,7 @@ sub tuser2_login {
+ 
+     $tuser2->login(
+         username => 'testuser2@testsubgroup',
+-        password => 'testpass2',
++        password => 'T3st!P@ss88',
+     );
+     noerrok( $tuser2->result ) && ok( $tuser2->nt_user_session )
+         or die "Couldn't log in";
+@@ -986,16 +982,13 @@ Tests delegation of zones to sub groups
+ sub test_zones {
+ 
+     # login testuser2
+-<<<<<<< HEAD
+-    my $tuser2 = tuser2_login();
+-=======
+     my $tuser2 = new NicTool(
+-        cache_users  => 0,
+-        cache_groups => 0,
+-        server_host  => Config('server_host'),
+-        server_port  => Config('server_port'),
++        cache_users       => 0,
++        cache_groups      => 0,
++        server_host       => Config('server_host'),
++        server_port       => Config('server_port'),
+         data_protocol     => Config('data_protocol'),
+-        transfer_protocol => ( Config('transfer_protocol') || 'http' ),
++        transfer_protocol => (Config('transfer_protocol') || 'http'),
+     );
+     isa_ok( $tuser2, 'NicTool' ) or die "Couldn't create NicTool Object";
+ 
+@@ -1005,7 +998,6 @@ sub test_zones {
+     );
+     noerrok( $tuser2->result ) && ok( $tuser2->nt_user_session )
+         or die "Couldn't log in";
+->>>>>>> refs/nt/pr/365
+ 
+     # should have no access to zid1
+     my $res = $tuser2->get_zone( nt_zone_id => $zid1 );
+@@ -1398,19 +1390,15 @@ Tests delegation of Zone Records to sub groups
+ sub test_zone_records {
+ 
+     #login testuser2
+-<<<<<<< HEAD
+-    my $tuser2 = tuser2_login();
+-=======
+     my $tuser2 = new NicTool(
+-        cache_users  => 0,
+-        cache_groups => 0,
+-        server_host  => Config('server_host'),
+-        server_port  => Config('server_port'),
++        cache_users       => 0,
++        cache_groups      => 0,
++        server_host       => Config('server_host'),
++        server_port       => Config('server_port'),
+         data_protocol     => Config('data_protocol'),
+-        transfer_protocol => ( Config('transfer_protocol') || 'http' )
++        transfer_protocol => (Config('transfer_protocol') || 'http'),
+     );
+-    isa_ok( $tuser2, 'NicTool' )
+-        or die "Couldn't create NicTool Object";
++    isa_ok( $tuser2, 'NicTool' ) or die "Couldn't create NicTool Object";
+ 
+     $tuser2->login(
+         username => 'testuser2@testsubgroup',
+@@ -1418,7 +1406,6 @@ sub test_zone_records {
+     );
+     noerrok( $tuser2->result ) && ok( $tuser2->nt_user_session )
+         or die "Couldn't log in";
+->>>>>>> refs/nt/pr/365
+ 
+     #should have no access to zrid1
+     my $res = $tuser2->get_zone_record( nt_zone_record_id => $zrid1 );
+diff --git a/server/xt/18_interaction.t b/server/xt/18_interaction.t
+index 4c33044..689c6ef 100644
+--- a/server/xt/18_interaction.t
++++ b/server/xt/18_interaction.t
+@@ -129,102 +129,7 @@ sub groups_with_children {
+             for ( 1 .. 6 ) { ok(0) }
+         }
+     }
+-<<<<<<< HEAD
+-=======
+-    else {
+-        warn "Couldn't create test zone";
+-        for ( 1 .. 6 ) { ok(0) }
+-    }
+-
+-    #
+-    # user
+-    #
+-
+-    #make a new group
+-    $res = $user->new_group( name => 'test_delete_me1' );
+-    die "Couldn't create test group1"
+-        unless noerrok($res)
+-        and like( $res->get('nt_group_id'), qr/^\d+$/ );
+-    $gid1 = $res->get('nt_group_id');
+-
+-    $group1 = $user->get_group( nt_group_id => $gid1 );
+-    die "Couldn't get test group1"
+-        unless noerrok($group1)
+-        and is( $group1->id, $gid1 );
+-
+-    $res = $group1->new_user(
+-        first_name => 'test',
+-        last_name  => '1',
+-        email      => 'test@example.com',
+-        username   => 'testuser1',
+-        password   => 'T3st!P@ss99',
+-        password2  => 'T3st!P@ss99'
+-    );
+-    if ( noerrok($res) ) {
+-        $uid = $res->get('nt_user_id');
+-        $res = $group1->delete;
+-        noerrok( $res, 600, 'has user' );
+-        like( $res->get('error_msg'),
+-                qr/You can't delete this group until you delete all of its users/ );
+-        like( $res->get('error_desc'), qr/Failure/ );
+-
+-        if ( $res->error_code eq 600 ) {
+-            $res = $user->delete_users( user_list => $uid );
+-            noerrok($res);
+-            $res = $group1->delete;
+-            noerrok($res);
+-        }
+-        else {
+-            is( 0, 1, "Group was already deleted incorrectly" );
+-            is( 0, 1, "Not deleting user $uid" );
+-        }
+-    }
+-    else {
+-        warn "Couldn't create test user";
+-        for ( 1 .. 6 ) { ok(0) }
+-    }
+-
+-    #
+-    # group
+-    #
+-
+-    #make a new group
+-    $res = $user->new_group( name => 'test_delete_me1' );
+-    die "Couldn't create test group1"
+-        unless noerrok($res)
+-        and like( $res->get('nt_group_id'), qr/^\d+$/ );
+-    $gid1 = $res->get('nt_group_id');
+-
+-    $group1 = $user->get_group( nt_group_id => $gid1 );
+-    die "Couldn't get test group1"
+-        unless noerrok($group1)
+-        and is( $group1->id, $gid1 );
+ 
+-    $res = $group1->new_group( name => 'sub_test1' );
+-    if ( noerrok($res) ) {
+-        $gid = $res->get('nt_group_id');
+-        $res = $group1->delete;
+-        noerrok( $res, 600, 'has group' );
+-        like( $res->get('error_msg'),
+-                qr/You can't delete this group until you delete all of its sub-groups/ );
+-        like( $res->get('error_desc'), qr/Failure/ );
+-
+-        if ( $res->error_code eq 600 ) {
+-            $res = $user->delete_group( nt_group_id => $gid );
+-            noerrok($res);
+-            $res = $group1->delete;
+-            noerrok($res);
+-        }
+-        else {
+-            is( 0, 1, "Group was already deleted incorrectly" );
+-            is( 0, 1, "Not deleting group $gid" );
+-        }
+-    }
+-    else {
+-        warn "Couldn't create test group";
+-        for ( 1 .. 6 ) { ok(0) }
+-    }
+->>>>>>> refs/nt/pr/365
+ }
+ 
+ sub nameserver_with_zones {
+diff --git a/server/xt/20_permission.t b/server/xt/20_permission.t
+index 96fceee..3254154 100644
+--- a/server/xt/20_permission.t
++++ b/server/xt/20_permission.t
+@@ -136,18 +136,7 @@ sub start {
+ 
+ =cut
+ 
+-<<<<<<< HEAD
+     $user = nt_client();
+-=======
+-    $user = new NicTool(
+-        cache_users       => 0,
+-        cache_groups      => 0,
+-        server_host       => Config('server_host'),
+-        server_port       => Config('server_port'),
+-        data_protocol     => Config('data_protocol'),
+-        transfer_protocol => (Config('transfer_protocol') || 'http'),
+-    );
+->>>>>>> refs/nt/pr/365
+     die "Couldn't create NicTool Object" unless is( ref $user, 'NicTool' );
+ 
+     $user->login(
+@@ -318,18 +307,7 @@ USER2 inherits permissions from GROUP2.
+ 
+ =cut
+ 
+-<<<<<<< HEAD
+     $tuser = nt_client();
+-=======
+-    $tuser = new NicTool(
+-        cache_users       => 0,
+-        cache_groups      => 0,
+-        server_host       => Config('server_host'),
+-        server_port       => Config('server_port'),
+-        data_protocol     => Config('data_protocol'),
+-        transfer_protocol => (Config('transfer_protocol') || 'http'),
+-    );
+->>>>>>> refs/nt/pr/365
+ 
+     $tuser->login(
+         username => 'testuser1@test_delete_me1',
+@@ -341,18 +319,7 @@ USER2 inherits permissions from GROUP2.
+ 
+ =cut
+ 
+-<<<<<<< HEAD
+     $tuser2 = nt_client();
+-=======
+-    $tuser2 = new NicTool(
+-        cache_users       => 0,
+-        cache_groups      => 0,
+-        server_host       => Config('server_host'),
+-        server_port       => Config('server_port'),
+-        data_protocol     => Config('data_protocol'),
+-        transfer_protocol => (Config('transfer_protocol') || 'http'),
+-    );
+->>>>>>> refs/nt/pr/365
+ 
+     $tuser2->login(
+         username => 'testuser2@testsubgroup',
+@@ -1361,18 +1328,7 @@ sub security {
+ 
+ =cut
+ 
+-<<<<<<< HEAD
+     $tuser = nt_client();
+-=======
+-    $tuser = new NicTool(
+-        cache_users       => 0,
+-        cache_groups      => 0,
+-        server_host       => Config('server_host'),
+-        server_port       => Config('server_port'),
+-        data_protocol     => Config('data_protocol'),
+-        transfer_protocol => (Config('transfer_protocol') || 'http'),
+-    );
+->>>>>>> refs/nt/pr/365
+ 
+     $tuser->login(
+         username => 'testuser1@test_delete_me1',

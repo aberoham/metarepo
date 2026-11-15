@@ -1,8 +1,8 @@
 # train patches
 
 `nt.py train` fetches PR heads and merges them in manifest order. A patch here
-resolves an overlap between two of them, or between a PR and main. None is
-needed today.
+resolves an overlap between two of them, or between a PR and main. Two are
+needed today: api#61 against main and NicTool#365 against master.
 
 Each JSON file records the PR head and the tree immediately before its patch.
 For a conflicted merge, that is the preceding train commit's tree. For a clean
